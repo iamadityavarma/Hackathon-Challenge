@@ -1,18 +1,23 @@
-from flask import Blueprint, request, jsonify
+# Flask imports
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_mail import Message
+
+# Database and models
 from . import db
 from .models import User, Chat, Appointment, Availability
-from flask_mail import Message
-import openai
-from werkzeug.security import generate_password_hash, check_password_hash
-import requests
 
-from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from . import db
-#from .models import Chat
+# Security
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# AI and API clients
+import openai
 from openai import OpenAI
 import anthropic
+
+# System imports
+import sys
+import requests
 
 
 
@@ -93,158 +98,198 @@ def login():
     else:
         return jsonify({'error': 'Invalid username or password'}), 401
 
-##############--------CHAT---------####################
-
-# @main_bp.route('/chat/send', methods=['POST'])
-# @jwt_required()
-# def send_message():
-#    client = get_openai_client() 
-#    user_identity = get_jwt_identity()
-#    data = request.json
-#    user_message = data.get('message')
-
-#    if not user_message:
-#        return jsonify({'error': 'Message is required'}), 400
-
-#    # Get previous messages from database for this user
-#    previous_chats = Chat.query.filter_by(
-#        user_id=user_identity['id']
-#    ).order_by(Chat.timestamp.desc()).limit(5).all()  # Last 5 messagess
-
-#    # Build conversation with all messages
-#    messages=[
-#             {"role": "system", "content": "You are a wellness counselor."},
-#             {"role": "user", "content": user_message}
-#         ]
-
-#    # Add previous messages to context
-#    for chat in reversed(previous_chats):
-#        if not chat.is_temp:  # If it's a user message
-#            messages.append({"role": "user", "content": chat.message})
-#        else:  # If it's an AI response
-#            messages.append({"role": "assistant", "content": chat.message})
-
-#    # Add new message
-#    messages.append({"role": "user", "content": user_message})
-
-#    try:
-#        # Call OpenAI API with your custom instructions
-#        response = client.chat.completions.create(
-#            model="gpt-4",
-#            messages=messages
-#        )
-
-#        gpt_response = response.choices[0].message.content
-
-#        # Save the chat in the database
-#        chat = Chat(user_id=user_identity['id'], message=user_message, is_temp=False)
-#        db.session.add(chat)
-
-#        # Save GPT response
-#        chat_response = Chat(user_id=user_identity['id'], message=gpt_response, is_temp=True)
-#        db.session.add(chat_response)
-
-#        db.session.commit()
-
-#        return jsonify({'message': gpt_response}), 200
-
-#    except Exception as e:
-#        return jsonify({'error': f'Error processing chat: {str(e)}'}), 500
 
 ######################################-----GET APPOINTMENTS-----######################################
 
+# @main_bp.route('/professionals', methods=['GET'])
+# @jwt_required()
+# def get_professionals():
+#     try:
+#         print("Starting get_professionals endpoint")
+#         sys.stdout.flush()
+#         print("Getting JWT identity...")
+#         user_identity = get_jwt_identity()
+#         print(f"JWT identity received: {user_identity}")
+        
+#         print("Querying user from database...")
+#         user = User.query.get(user_identity['id'])
+#         print(f"User found: {user}")
+#         print(f"User role: {user.role if user else 'No user found'}")
+
+#         if not user or user.role != 'student':
+#             print("Authorization check failed")
+#             return jsonify({'error': 'Unauthorized'}), 401
+
+#         print("Getting professionals from database...")
+#         professionals = User.query.filter_by(role='professional').all()
+#         print(f"Found {len(professionals)} professionals")
+
+#         result = []
+#         print("Processing each professional...")
+#         for idx, professional in enumerate(professionals):
+#             print(f"Processing professional {idx + 1}: ID={professional.id}")
+            
+#             print("Getting availability for professional...")
+#             availability = Availability.query.filter_by(professional_id=professional.id).all()
+#             print(f"Found {len(availability)} availability slots")
+            
+#             slots = []
+#             for slot in availability:
+#                 print(f"Processing slot: date={slot.date}, start={slot.start_time}, end={slot.end_time}")
+#                 slots.append({
+#                     'date': str(slot.date),
+#                     'start_time': str(slot.start_time),
+#                     'end_time': str(slot.end_time)
+#                 })
+            
+#             prof_data = {
+#                 'id': str(professional.id),
+#                 'name': professional.username,
+#                 'email': professional.email,
+#                 'availability': slots
+#             }
+#             print(f"Created professional data: {prof_data}")
+#             result.append(prof_data)
+
+#         print("Preparing final response...")
+#         print(f"Final result: {result}")
+#         return jsonify(result), 200
+
+#     except Exception as e:
+#         print(f"ERROR OCCURRED: {str(e)}")
+#         print(f"Error type: {type(e)}")
+#         import traceback
+#         print(f"Traceback: {traceback.format_exc()}")
+#         return jsonify({'error': str(e)}), 500
+
+
+
 @main_bp.route('/professionals', methods=['GET'])
-@jwt_required()
 def get_professionals():
-    # Ensure the user is a student
-    user_identity = get_jwt_identity()
-    user = User.query.get(user_identity['id'])
-    if not user or user.role != 'student':
-        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        # Fetch all professionals
+        professionals = User.query.filter_by(role='professional').all()
 
-    # Fetch all professionals and their availability
-    professionals = User.query.filter_by(role='professional').all()
+        # Format the response
+        result = []
+        for professional in professionals:
+            availability = Availability.query.filter_by(professional_id=professional.id).all()
+            slots = [
+                {
+                    'date': str(slot.date),
+                    'start_time': str(slot.start_time),
+                    'end_time': str(slot.end_time)
+                }
+                for slot in availability
+            ]
+            result.append({
+                'id': str(professional.id),
+                'name': professional.username,
+                'email': professional.email,
+                'availability': slots
+            })
 
-    # Format the response
-    result = []
-    for professional in professionals:
-        availability = Availability.query.filter_by(professional_id=professional.id).all()
-        slots = [
-            {'date': str(slot.date), 'start_time': str(slot.start_time), 'end_time': str(slot.end_time)}
-            for slot in availability
-        ]
-        result.append({
-            'id': professional.id,
-            'name': professional.username,
-            'email': professional.email,
-            'availability': slots
-        })
+        return jsonify(result), 200
 
-    return jsonify(result), 200
+    except Exception as e:
+        print("Error:", str(e))
+        return jsonify({'error': str(e)}), 500
+
 
 
 ######################################-----BOOK APPOINTMENTS-----######################################
 
+# @main_bp.route('/book_appointment', methods=['POST'])
+# @jwt_required()
+# def book_appointment():
+#     data = request.json
+#     user_identity = get_jwt_identity()
+#     user = User.query.get(user_identity['id'])
+
+#     # Ensure the user is a student
+#     if not user or user.role != 'student':
+#         return jsonify({'error': 'Unauthorized'}), 401
+
+#     # Validate input data
+#     professional_id = data.get('professional_id')
+#     appointment_date = data.get('appointment_date')
+#     appointment_time = data.get('appointment_time')
+
+#     if not professional_id or not appointment_date or not appointment_time:
+#         return jsonify({'error': 'Professional, date, and time are required'}), 400
+
+#     # Validate professional
+#     professional = User.query.get(professional_id)
+#     if not professional or professional.role != 'professional':
+#         return jsonify({'error': 'Invalid professional ID'}), 400
+
+#     # Validate appointment time against availability
+#     from datetime import time
+
+#     selected_time = time.fromisoformat(appointment_time)
+#     availability = Availability.query.filter_by(professional_id=professional.id, date=appointment_date).all()
+#     is_valid_time = any(
+#         slot.start_time <= selected_time <= slot.end_time
+#         for slot in availability
+#     )
+#     if not is_valid_time:
+#         return jsonify({'error': 'Selected time slot is not available'}), 400
+
+#     # Save the appointment
+#     appointment = Appointment(
+#         user_id=user.id,
+#         professional_id=professional.id,
+#         appointment_time=f"{appointment_date}T{appointment_time}"
+#     )
+#     db.session.add(appointment)
+#     db.session.commit()
+
+
 @main_bp.route('/book_appointment', methods=['POST'])
-@jwt_required()
 def book_appointment():
-    data = request.json
-    user_identity = get_jwt_identity()
-    user = User.query.get(user_identity['id'])
+    try:
+        data = request.json
+        
+        # Get required data from request
+        professional_id = data.get('professional_id')
+        date = data.get('date')
+        start_time = data.get('start_time')
+        
+        if not professional_id or not date or not start_time:
+            return jsonify({'error': 'Missing required fields'}), 400
 
-    # Ensure the user is a student
-    if not user or user.role != 'student':
-        return jsonify({'error': 'Unauthorized'}), 401
+        # Check if slot is available
+        availability = Availability.query.filter_by(
+            professional_id=professional_id,
+            date=date,
+            start_time=start_time
+        ).first()
 
-    # Validate input data
-    professional_id = data.get('professional_id')
-    appointment_date = data.get('appointment_date')
-    appointment_time = data.get('appointment_time')
+        if not availability:
+            return jsonify({'error': 'Slot not available'}), 400
 
-    if not professional_id or not appointment_date or not appointment_time:
-        return jsonify({'error': 'Professional, date, and time are required'}), 400
+        # Create appointment using the correct table structure
+        from datetime import datetime
+        appointment = Appointment(  # Note: Use your actual model name
+            user_id=1,  # Hardcoded for now
+            professional_id=professional_id,
+            appointment_time=f"{date}T{start_time}",
+            created_at=datetime.utcnow()
+        )
 
-    # Validate professional
-    professional = User.query.get(professional_id)
-    if not professional or professional.role != 'professional':
-        return jsonify({'error': 'Invalid professional ID'}), 400
+        # Save appointment and delete availability
+        db.session.add(appointment)
+        db.session.delete(availability)
+        db.session.commit()
 
-    # Validate appointment time against availability
-    from datetime import time
+        return jsonify({'message': 'Appointment booked successfully'}), 201
 
-    selected_time = time.fromisoformat(appointment_time)
-    availability = Availability.query.filter_by(professional_id=professional.id, date=appointment_date).all()
-    is_valid_time = any(
-        slot.start_time <= selected_time <= slot.end_time
-        for slot in availability
-    )
-    if not is_valid_time:
-        return jsonify({'error': 'Selected time slot is not available'}), 400
+    except Exception as e:
+        print("Error:", str(e))
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
-    # Save the appointment
-    appointment = Appointment(
-        user_id=user.id,
-        professional_id=professional.id,
-        appointment_time=f"{appointment_date}T{appointment_time}"
-    )
-    db.session.add(appointment)
-    db.session.commit()
-
-    # Send email notification
-
-    # try:
-    #     msg = Message(
-    #         subject="New Appointment Booking",
-    #         recipients=[professional.email],
-    #         body=f"Appointment Details:\nStudent: {user.username}\nDate: {appointment_date}\nTime: {appointment_time}"
-    #     )
-    #     mail.send(msg)
-    # except Exception as e:
-    #     return jsonify({'error': f'Failed to send email: {str(e)}'}), 500
-
-    # return jsonify({'message': 'Appointment booked successfully'}), 201
-
-######################################-----AVAILABILITY----######################################
+######################################-----add AVAILABILITY----######################################
 
 @main_bp.route('/availability/add', methods=['POST'])
 @jwt_required()
