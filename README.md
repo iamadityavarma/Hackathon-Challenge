@@ -205,27 +205,26 @@ bashCopy# Clear npm cache
 npm cache clean --force
 npm install
 
-# If Vite issues occur
+## If Vite issues occur
 npm run dev -- --force
 
-Backend Issues
+## Backend Issues
 
 bashCopy# Database reset
 flask db stamp head
 flask db migrate
 flask db upgrade
 
-# Package issues
+## Package issues
 pip install -r requirements.txt --no-cache-dir
 Contributing
 
-Fork the repository
+## Fork the repository
 Create feature branch: git checkout -b feature/AmazingFeature
 Commit changes: git commit -m 'Add AmazingFeature'
 Push to branch: git push origin feature/AmazingFeature
 Open a pull request
 
-License
+## License
 This project is licensed under the MIT License.
-Contact
-For support or queries, please contact:
+
