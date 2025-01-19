@@ -7,13 +7,45 @@ const CreateAccount = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("student");
   const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const handleCreateAccount = (e) => {
+  // const handleCreateAccount = (e) => {
+  //   e.preventDefault();
+  //   setUser({ username, password, email });
+  //   navigate("/student-login");
+  // };
+
+  const handleCreateAccount = async (e) => {
     e.preventDefault();
-    setUser({ username, password, email });
-    navigate("/student-login");
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "testuser",
+          email: "testuser@example.com",
+          password: "securepassword",
+          role: "student",
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Registration successful, please login");
+        // localStorage.setItem("token", data.access_token);
+        // localStorage.setItem("role", data.role);
+        window.location.href = "/signin";
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error("Error registering:", error);
+    }
   };
 
   return (
@@ -57,6 +89,10 @@ const CreateAccount = () => {
               required
             />
           </div>
+          <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="student">Student</option>
+            <option value="professional">Professional</option>
+          </select>
           <button className="create-account-button" type="submit">
             Create Account
           </button>

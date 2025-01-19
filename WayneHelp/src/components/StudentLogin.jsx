@@ -10,14 +10,43 @@ const StudentLogin = () => {
 
   const navigate = useNavigate();
 
-  const handleSignIn = (e) => {
+  // const handleSignIn = (e) => {
+  //   e.preventDefault();
+
+  //   if (user && user.username === username && user.password === password) {
+  //     alert("Sign-In Successful!");
+  //     navigate("/chat");
+  //   } else {
+  //     alert("Invalid username or password");
+  //   }
+  // };
+
+  const handleSignIn = async (e) => {
     e.preventDefault();
 
-    if (user && user.username === username && user.password === password) {
-      alert("Sign-In Successful!");
-      navigate("/chat");
-    } else {
-      alert("Invalid username or password");
+    try {
+      const response = await fetch("http://127.0.0.1:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Login successful");
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("role", data.role);
+        window.location.href = "/chat";
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
     }
   };
 
