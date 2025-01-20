@@ -1,4 +1,4 @@
-Wayne State Mental Health Chatbot - 2024
+Wayne State Mental Health Chatbot - 2025
 A mental health support chatbot designed to assist Wayne State students with their mental well-being and connect them with professional counselors.
 Features
 
