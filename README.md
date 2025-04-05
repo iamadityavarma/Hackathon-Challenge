@@ -1,230 +1,95 @@
-Wayne State Mental Health Chatbot - 2025
-A mental health support chatbot designed to assist Wayne State students with their mental well-being and connect them with professional counselors.
-Features
+## MindMate – AI-Powered Mental Health Companion
 
-🤖 AI-powered mental health chat support
+MindMate is a full-stack mental health app that provides AI-powered chat support using the Claude API. The platform includes secure JWT-based authentication, appointment booking, and a clean frontend interface focused on user experience and accessibility.
 
-👥 Professional counselor booking system
+---
 
-📅 Availability management for counselors
+### Features
 
-🔒 Secure user authentication
+- AI chat support using Claude API
+- Secure user authentication (JWT)
+- Appointment booking system
+- Clean and accessible UI/UX
+- Full-stack architecture using ReactJS, Flask, and SQLite
 
-💬 Real-time chat functionality
-
-📊 Student and professional dashboards
-
-Project Structure
-Frontend (WayneHelp)
-
-WayneHelp/
-
-├── public/              # Static files
-├── src/                 # Source files
-│   ├── components/      # Reusable components
-│   ├── pages/          # Page components
-│   │   ├── Login/      # Login page
-│   │   ├── Register/   # Registration page
-│   │   ├── Chat/       # Chatbot interface
-│   │   └── Appointments/# Appointment management
-│   └── assets/         # Images and styles
-├── package.json        # Dependencies
-└── vite.config.js      # Vite configuration
-
-## Pages and Features
-
-### Login Page
-
-User authentication
-Role-based access (student/professional)
-Password recovery option
-
-
-### Registration Page
-
-User registration form
-Role selection
-Email verification
-
-
-### Chatbot Interface
-
-Real-time chat with AI
-Mental health support
-Crisis resources
-Chat history
-
-
-### Appointment System
-
-View available counselors
-Book appointments
-Manage bookings
-View availability calendar
-
-
+---
 
 ### Tech Stack
-Frontend
 
-React + Vite
-Tailwind CSS for styling
-React Router for navigation
-JWT for authentication
+| Frontend | Backend | Database | Authentication | AI Integration |
+| -------- | ------- | -------- | -------------- | -------------- |
+| ReactJS  | Flask   | SQLite   | JWT            | Claude API     |
 
-### Backend
+---
 
-Python/Flask
-SQLite database
-Claude API integration
-JWT authentication
+### Project Structure
 
-### Prerequisites
+```
+/client        # React frontend
+/server        # Flask backend
+  ├── routes   # API endpoints
+  ├── models   # Database models
+  └── utils    # Utility functions (Claude API, JWT, etc.)
+```
 
-Node.js 14+ for frontend
-Python 3.8+ for backend
-npm or yarn
-Git
-SQLite3
+---
 
-### Installation
-Frontend Setup
+### Getting Started
 
-## Navigate to frontend directory
-cd WayneHelp
+**1. Clone the Repository**
 
-## Install dependencies
-npm install
+```bash
+git clone https://github.com/Soumya98-dev/MindMate.git
+cd MindMate
+```
 
-## Start development server
-npm run dev
+**2. Set Up and Run the Backend (Flask)**
 
-## Navigate to backend directory
-cd ..
-
-## Create and activate virtual environment
-python -m venv venv
-
-## Windows
-venv\Scripts\activate
-
-## Unix/MacOS
-source venv/bin/activate
-
-## Install dependencies
+```bash
+cd server
 pip install -r requirements.txt
+python app.py
+```
 
-Environment Configuration
-Create .env file in root directory:
-CopyFLASK_APP=run.py
-FLASK_DEBUG=1
-JWT_SECRET_KEY=your_jwt_secret
-ANTHROPIC_API_KEY=your_anthropic_api_key
-Database Setup
-bashCopyflask db upgrade
-python create_table.py
-Running the Application
+**3. Set Up and Run the Frontend (React)**
 
-Start the backend server
-
-bashCopyflask run
-
-Start the frontend development server
-
-bashCopycd WayneHelp
-npm run dev
-
-Access the application at http://localhost:5173
-
-API Endpoints
-Authentication
-
-POST /auth/register - Register new user
-POST /auth/login - User login
-
-Chat
-
-POST /chat/send - Send message to chatbot
-GET /chat/history - Get chat history
-
-Appointments
-
-GET /professionals - List all professionals
-POST /book_appointment - Book an appointment
-GET /appointments - Get user's appointments
-
-Availability
-
-POST /availability/add - Add professional availability
-GET /availability - Get professional's availability
-
-Database Schema
-Users Table
-sqlCopyCREATE TABLE users (
-    id INTEGER PRIMARY KEY,
-    username TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role TEXT NOT NULL
-);
-Availability Table
-sqlCopyCREATE TABLE availability (
-    id INTEGER PRIMARY KEY,
-    professional_id INTEGER NOT NULL,
-    date TEXT NOT NULL,
-    start_time TEXT NOT NULL,
-    end_time TEXT NOT NULL
-);
-Appointments Table
-sqlCopyCREATE TABLE appointments (
-    id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    professional_id INTEGER NOT NULL,
-    appointment_time TEXT NOT NULL,
-    created_at DATETIME
-);
-Testing
-Backend Testing
-Use Thunder Client or Postman for API testing:
-bashCopy# Example: Test chat endpoint
-POST http://localhost:5000/chat/send
-Content-Type: application/json
-Authorization: Bearer your_jwt_token
-
-{
-    "message": "I'm feeling anxious about my exams"
-}
-Frontend Testing
-bashCopycd WayneHelp
-npm run test
-Troubleshooting
-
-Frontend Issues
-
-bashCopy# Clear npm cache
-npm cache clean --force
+```bash
+cd client
 npm install
+npm start
+```
 
-## If Vite issues occur
-npm run dev -- --force
+---
 
-## Backend Issues
+### API Overview (Optional)
 
-bashCopy# Database reset
-flask db stamp head
-flask db migrate
-flask db upgrade
+```http
+POST /api/auth/login         # Authenticate user
+POST /api/chat               # Interact with Claude API
+GET /api/appointments        # Retrieve appointment data
+```
 
-## Package issues
-pip install -r requirements.txt --no-cache-dir
-Contributing
+---
 
-## Fork the repository
-Create feature branch: git checkout -b feature/AmazingFeature
-Commit changes: git commit -m 'Add AmazingFeature'
-Push to branch: git push origin feature/AmazingFeature
-Open a pull request
+### Inspiration
 
-## License
+MindMate was created to explore the intersection of AI and mental health. The goal was to develop an accessible, user-friendly platform that leverages modern tech to support emotional well-being.
+
+---
+
+### Achievements
+
+- Secured 5th place at Wayne State Hackathon 2024
+
+---
+
+### Author
+
+**Soumyadeep Chatterjee**
+[GitHub](https://github.com/Soumya98-dev) • [LinkedIn](https://www.linkedin.com/in/deep98)
+
+---
+
+### License
+
 This project is licensed under the MIT License.
-
